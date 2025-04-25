@@ -1,0 +1,714 @@
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+  <link rel="stylesheet" 
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-jp-dynamic-subset.min.css" />
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+
+
+    <style>
+
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+
+        body {
+            font-family: "Pretendard Variable", Pretendard, "Pretendard JP", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+        }    
+
+        img {
+            width: 100%;
+            height: 100%;
+        }
+
+
+        .song-list ul
+        {
+          margin:0;
+          padding:0;
+          text-align:center;
+        }
+
+        .song-list li
+        {
+          list-style:none;
+          text-align: left;
+          display:inline-block;
+          background:white;
+          margin:5px;
+          line-height: 1.5;
+          border-radius: 5px;
+        }
+
+
+
+
+/*뮤직 플레이어*/
+
+        .player {
+            position:absolute;
+            z-index:80;
+            left:3vw;
+            top:5vh;
+            width:120px;
+            height:auto;
+            background-color: white;
+            outline: solid 2px #6f5c4c;
+            border-radius: 5px;
+            box-shadow: 4px 4px 0px #6f5c4c;
+        }
+
+        .playertitle {
+            position: relative;
+            witdh:90px;
+            height:auto;
+            margin:15px 13px 9px 14px;
+            font-size:13px;
+            font-weight: 600;
+        }
+
+
+        .playerimg {
+            width: 80px;
+            height: 80px;
+            margin: 5px 20px 11px 20px;
+            transform-origin: 50% 50%;
+        }
+
+        .rotating {
+            animation: rotate_image 8s linear infinite;
+        }
+
+        @keyframes rotate_image {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+
+        .playerimg img {
+            border-radius: 4px;
+        }
+
+        .playericon{
+            width:120px;
+            height:20px;
+            margin-left:5px;
+        }
+
+        .playericon i {
+        }
+
+        .slider {
+          flex-grow: 1;
+          background-color: #D8D8D8;
+          position: relative;
+        }
+
+        .slider .progress {
+          background-color: #B8A079;
+          border-radius: inherit;
+          position: absolute;
+          pointer-events: none;
+          max-width: 93%; /* Progress 최대 너비 설정 */
+        }
+
+        .slider .progress .pin {
+          height: 10px;
+          width: 10px;
+          border-radius: 10px;
+          background-color: #6f5c4c;
+          position: absolute;
+          pointer-events: all;
+        }
+
+        .controls {
+          line-height: 20px;
+          display: flex;
+          flex-grow: 1;
+          justify-content: space-between;
+          align-items: center;
+          margin:15px 8px 18px 8px;
+
+        }
+
+        .controls .slider {
+          margin-left: 5px;
+          margin-right: 22px;
+          border-radius: 2px;
+          height: 3px;
+        }
+
+        .controls .slider .progress {
+          width: 0;
+          height: 100%;
+        }
+
+        .controls .slider .progress .pin {
+          right: -8px;
+          top: -3.5px;
+        }
+
+/* 볼륩컨트롤 */
+
+       .soundicon {
+            position: absolute;
+            right:12px;
+            bottom:19px;
+            z-index:99;
+        }
+
+
+        .volume-control {
+            display: none;
+            position: absolute;
+            bottom: 10px;
+            right: -40px;
+            width: 26px; 
+            height: 100px; 
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            padding: 8px 10px 14px 10px;
+            box-sizing: border-box;
+            outline: 2px solid #6f5c4c; 
+            border-radius: 5px;
+            box-shadow: 4px 4px 0px #6f5c4c;
+        }
+        
+        .volume-slider {
+            width: 100%;
+            height: 100%;
+            background-color: #ccc;
+            position: relative;
+            margin-top: 5px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column; /* 세로 방향으로 설정 */
+        }
+        
+        .volume-slider .slider-bar {
+            width: 100%;
+            background-color: #B8A079;
+            position: absolute;
+            bottom: 0; /* 아래에 배치 */
+        }
+        
+        .volume-slider .slider-pin {
+            height: 10px;
+            width: 10px;
+            background-color: #6f5c4c;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0; /* 아래에 배치 */
+            left: 50%;
+            transform: translate(-50%, 3px); /* y축으로 3px 아래로 이동 */
+        }
+
+/* 노래 리스트 */
+
+        .song-list {
+            position: absolute;
+            top:0;
+            right: -190px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 150px;
+            max-height: 250px;
+            overflow-y:scroll;
+            background-color: white;
+            outline: 2px solid #6f5c4c; /* Solid outline */
+            border-radius: 5px;
+            box-shadow: 4px 4px 0px #6f5c4c;
+        }
+
+        .song-list.show {
+        }
+
+        .song-title {
+            margin-bottom: 10px;
+        }
+
+        #songListUl {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            font-size:13px;
+            text-align: left;
+        }
+
+        #songListUl li {
+            font-weight: 500;
+        }
+
+        #songListUl li.active {
+            color:#B8A079;
+            font-weight:700;
+        }
+
+        .song-list::-webkit-scrollbar {
+        width: 12px;
+        }
+
+        .song-list::-webkit-scrollbar-thumb {
+            background-color: #B8A079;
+            border-radius: 20px;
+            background-clip: padding-box;
+            border: 4px solid transparent;
+        }
+
+        .song-list::-webkit-scrollbar-track {
+         background-color:white;
+         border-radius: 10px;
+        }
+
+
+
+
+    </style>
+
+
+</head>
+
+
+<body>
+
+
+        <div class="player">
+
+        <div class="playertitle song-title" id="songTitle">
+        Nothing Now
+        </div>       
+
+        <div class="playerimg" id="playerImg">
+        <img src="https://blog.kakaocdn.net/dn/IJjzK/btsIcXtt4aE/VNgPEn1xjRYKCyA3WJWD21/img.png" alt="Album Art">
+        </div>
+
+
+        <div class="playericon">
+            <i style="margin:5px 6px 5px 5px; width:8px; color:#6f5c4c;" class="fa-solid fa-repeat fa-xs" id="repeat"></i>
+            <i style="margin:5px 2px 5px 5px; width:8px; color:#6f5c4c;" class="fa-solid fa-backward-step fa-sm"></i>
+            <i style="margin:5px; width:8px; color:#6f5c4c;" class="fa-solid fa-play fa-lg" id="playPause"></i>
+            <i style="margin:5px; width:8px; color:#6f5c4c;" class="fa-solid fa-forward-step fa-sm"></i>
+            <i style="margin:4px; width:8px; color:#6f5c4c;" class="fa-solid fa-shuffle fa-xs" id="shuffle"></i>
+        </div>
+
+<!-- 볼륨 -->
+
+
+        <div class="soundicon" id="volumeIcon">
+        <i style="color:#6f5c4c;" class="fa-solid fa-volume-low fa-sm"></i>
+        </div>
+
+    <div class="volume-control" id="volumeControl">
+        <div class="volume-slider" id="volumeSlider">
+            <div class="slider-bar" id="volumeBar"></div>
+            <div class="slider-pin" id="volumePin"></div>
+        </div>
+    </div>    
+
+    <div class="controls">
+      <div class="slider" data-direction="horizontal">
+        <div class="progress">
+          <div class="pin" id="progress-pin" data-method="rewind"></div>
+        </div>
+      </div>
+    </div>
+
+<!-- 리스트 -->
+
+    <div class="song-list">
+        <ul id="songListUl"></ul>
+    </div>
+
+        </div>
+
+
+    </div>
+
+
+<!-- 노래 삽입 -->
+
+<audio class="audio" data-title="Harvest" id="audio1" src="https://nanagom-77.github.io/forsite/file/harvest.mp3"></audio>
+<audio class="audio" data-title="Dance of the Sugarplum Fairy" id="audio2" src="https://nanagom-77.github.io/forsite/file/dancingfairy.mp3"></audio>
+<audio class="audio" data-title="Yggdrasil" id="audio3" src="https://nanagom-77.github.io/forsite/file/yggdrasil.mp3"></audio>
+<audio class="audio" data-title="情動カタルシス" id="audio4" src="https://nanagom-77.github.io/forsite/file/music3-2.mp3"></audio>
+<audio class="audio" data-title="狂った世界" id="audio5" src="https://nanagom-77.github.io/forsite/file/sepo1.mp3"></audio>
+<audio class="audio" data-title="嘘だらけの真実" id="audio6" src="https://nanagom-77.github.io/forsite/file/sepo2.mp3"></audio>
+<audio class="audio" data-title="共鳴解凍" id="audio7" src="https://nanagom-77.github.io/forsite/file/sepo3.mp3"></audio>
+<audio class="audio" data-title="焔 Homura" id="audio8" src="https://nanagom-77.github.io/forsite/file/sepo4.mp3"></audio>
+<audio class="audio" data-title="月下美人" id="audio9" src="https://nanagom-77.github.io/forsite/file/sepo5.mp3"></audio>
+<audio class="audio" data-title="僕は僕じゃない僕であって僕じゃない -2nd Edition-" id="audio10" src="https://nanagom-77.github.io/forsite/file/sepo6.mp3"></audio>
+
+
+
+<!--오디오 플레이어 스크립트-->
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const audioElements = document.querySelectorAll('.audio');
+    const playPauseButton = document.getElementById('playPause');
+    const repeatButton = document.getElementById('repeat');
+    const shuffleButton = document.getElementById('shuffle');
+    const progress = document.querySelector('.progress');
+    const slider = document.querySelector('.slider');
+    const progressPin = document.getElementById('progress-pin');
+    const songTitleElement = document.getElementById('songTitle');
+    const playerImg = document.getElementById('playerImg');
+    const songListUl = document.getElementById('songListUl');
+    const songTitleDiv = document.querySelector('.song-title');
+    const songList = document.querySelector('.song-list');
+
+    if (!audioElements.length || !playPauseButton || !repeatButton || !shuffleButton || !progress || !progressPin || !songTitleElement || !playerImg || !songListUl || !songTitleDiv || !songList) {
+        console.error('One or more elements not found in the DOM');
+        return;
+    }
+
+    let isPlaying = false;
+    let isRepeat = false;
+    let isShuffle = false;
+    let isDragging = false;
+    let currentAudio = getRandomAudio(); // 초기 오디오 랜덤 선택
+
+    function getRandomAudio() {
+        const randomIndex = Math.floor(Math.random() * audioElements.length); // 0부터 audioElements.length - 1 사이의 랜덤 인덱스 선택
+        return audioElements[randomIndex];
+    }
+
+    function updateSongTitle() {
+        const currentSongTitle = currentAudio.getAttribute('data-title');
+        songTitleElement.textContent = currentSongTitle;
+    }
+
+    function updatePlayPauseIcon() {
+        playPauseButton.classList.remove('fa-play', 'fa-pause');
+        playPauseButton.classList.add(isPlaying ? 'fa-pause' : 'fa-play');
+    }
+
+    function highlightCurrentSong() {
+        const songItems = document.querySelectorAll('#songListUl li');
+        songItems.forEach(item => {
+            const title = item.textContent.split('. ')[1];
+            if (title === currentAudio.getAttribute('data-title')) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        songTitleDiv.textContent = currentAudio.getAttribute('data-title');
+    }
+
+    function stopAllAudio() {
+        audioElements.forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+        currentAudio = null;
+        isPlaying = false;
+        updatePlayPauseIcon();
+    }
+
+    function playAudio(audio) {
+        if (currentAudio === audio) {
+            togglePlay(audio);
+        } else {
+            stopAllAudio();
+            audio.play();
+            currentAudio = audio;
+            isPlaying = true;
+            updatePlayPauseIcon();
+            highlightCurrentSong();
+        }
+    }
+
+    function togglePlay(audio) {
+        if (audio.paused) {
+            audio.play();
+            isPlaying = true;
+            updatePlayPauseIcon();
+        } else {
+            audio.pause();
+            isPlaying = false;
+            updatePlayPauseIcon();
+        }
+    }
+
+    playPauseButton.addEventListener('click', () => {
+        if (isPlaying) {
+            currentAudio.pause();
+        } else {
+            currentAudio.play();
+        }
+        isPlaying = !isPlaying;
+        updatePlayPauseIcon();
+        highlightCurrentSong(); // 하이라이트 업데이트 추가
+    });
+
+    repeatButton.addEventListener('click', () => {
+        isRepeat = !isRepeat;
+        currentAudio.loop = isRepeat;
+        repeatButton.style.color = isRepeat ? '#B8A079' : '#6d6b67';
+    });
+
+    shuffleButton.addEventListener('click', () => {
+        isShuffle = !isShuffle;
+        shuffleButton.style.color = isShuffle ? '#B8A079' : '#6d6b67';
+
+        if (isShuffle) {
+            currentAudio = getRandomAudio();
+            currentAudio.currentTime = 0;
+
+            if (isPlaying) {
+                audioElements.forEach(audio => audio.pause());
+                currentAudio.play();
+            }
+            highlightCurrentSong(); // 하이라이트 업데이트 추가
+        }
+    });
+
+    function updateTime() {
+        if (!isDragging) {
+            const progressWidth = (currentAudio.currentTime / currentAudio.duration) * 93; // 93%까지만 나타내도록 수정
+            progress.style.width = progressWidth + '%';
+        }
+    }
+
+    audioElements.forEach(audio => {
+        audio.addEventListener('timeupdate', updateTime);
+        audio.addEventListener('play', () => {
+            currentAudio = audio;
+            updateSongTitle();
+            highlightCurrentSong(); // 하이라이트 업데이트 추가
+        });
+        audio.addEventListener('ended', playNextTrack);
+    });
+
+    // 다음 곡을 재생하는 함수
+    function playNextTrack() {
+        if (isShuffle) {
+            currentAudio = getRandomAudio();
+        } else {
+            const currentIndex = Array.from(audioElements).indexOf(currentAudio);
+            const nextIndex = (currentIndex + 1) % audioElements.length;
+            currentAudio = audioElements[nextIndex];
+        }
+        currentAudio.currentTime = 0;
+        if (isPlaying) {
+            currentAudio.play();
+        }
+        highlightCurrentSong(); // 하이라이트 업데이트 추가
+    }
+
+    // 이전 곡을 재생하는 함수
+    function playPreviousTrack() {
+        const currentIndex = Array.from(audioElements).indexOf(currentAudio);
+        const previousIndex = (currentIndex - 1 + audioElements.length) % audioElements.length;
+        currentAudio = audioElements[previousIndex];
+        currentAudio.currentTime = 0;
+        if (isPlaying) {
+            currentAudio.play();
+        }
+        highlightCurrentSong(); // 하이라이트 업데이트 추가
+    }
+
+    // 다음 곡 버튼에 클릭 이벤트 리스너 추가
+    document.querySelector('.fa-forward-step').addEventListener('click', () => {
+        currentAudio.pause(); // 현재 재생 중인 오디오를 일시 정지합니다.
+        playNextTrack(); // 다음 곡 재생 함수를 호출합니다.
+    });
+
+    // 이전 곡 버튼에 클릭 이벤트 리스너 추가
+    document.querySelector('.fa-backward-step').addEventListener('click', () => {
+        currentAudio.pause(); // 현재 재생 중인 오디오를 일시 정지합니다.
+        playPreviousTrack(); // 이전 곡 재생 함수를 호출합니다.
+    });
+
+    progressPin.addEventListener('mousedown', (e) => {
+        isDragging = true;
+
+        const onMouseMove = (e) => {
+            const rect = slider.getBoundingClientRect();
+            let newTime = ((e.clientX - rect.left) / slider.offsetWidth) * currentAudio.duration;
+            newTime = Math.max(0, Math.min(newTime, currentAudio.duration)); // Clamp between 0 and duration
+
+            const progressWidth = (newTime / currentAudio.duration) * 100;
+            progress.style.width = progressWidth + '%';
+            currentAudio.currentTime = newTime;
+        };
+
+        const onMouseUp = (e) => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            isDragging = false;
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+
+    slider.addEventListener('click', (e) => {
+        const rect = slider.getBoundingClientRect();
+        let newTime = ((e.clientX - rect.left) / slider.offsetWidth) * currentAudio.duration;
+        newTime = Math.max(0, Math.min(newTime, currentAudio.duration));
+
+        const progressWidth = (newTime / currentAudio.duration) * 100;
+        progress.style.width = progressWidth + '%';
+        currentAudio.currentTime = newTime;
+    });
+
+    // 초기에 숨기기
+    songList.style.display = 'none';
+
+    audioElements.forEach((audio, index) => {
+        const title = audio.getAttribute('data-title');
+        const listItem = document.createElement('li');
+        listItem.textContent = `${index + 1}. ${title}`;
+        listItem.addEventListener('click', () => {
+            playAudio(audio);
+        });
+        songListUl.appendChild(listItem);
+    });
+
+    songTitleDiv.addEventListener('click', () => {
+        songList.style.display = (songList.style.display === 'none') ? 'block' : 'none';
+        volumeControl.style.display = 'none';
+    });
+
+    document.addEventListener('click', (event) => {
+    const target = event.target;
+
+    // 제목 리스트 또는 제목 리스트의 자식 요소를 클릭한 경우 아무 동작 없음
+    if (target.closest('.song-list') || target.closest('.song-title') || target.closest('.player')) {
+        return;
+    }
+    // 제목 리스트 또는 제목 리스트의 자식 요소가 아닌 경우 제목 리스트 숨기기
+    songList.style.display = 'none';
+    });
+
+});
+
+//도넛 재생정지
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const audioElements = document.querySelectorAll('audio');
+            const playerImg = document.getElementById('playerImg');
+
+            if (!audioElements.length || !playerImg) {
+                console.error('One or more elements not found in the DOM');
+                return;
+            }
+
+            audioElements.forEach(audio => {
+                audio.addEventListener('play', () => {
+                    audioElements.forEach(a => a !== audio && a.pause()); // 다른 모든 오디오를 일시 정지
+                    playerImg.classList.add('rotating');
+                });
+
+                audio.addEventListener('pause', () => {
+                    playerImg.classList.remove('rotating');
+                });
+
+                audio.addEventListener('ended', () => {
+                    playerImg.classList.remove('rotating');
+                });
+            });
+        });
+
+
+//볼륨바 함수
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const volumeIcon = document.getElementById('volumeIcon');
+            const volumeControl = document.getElementById('volumeControl');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeBar = document.getElementById('volumeBar');
+            const volumePin = document.getElementById('volumePin');
+            const songList = document.querySelector('.song-list');
+
+            let isDragging = false;
+
+            // 초기 볼륨 설정
+            const initialVolume = 0.8; // 최대 볼륨으로 설정
+            setAllAudioVolume(initialVolume);
+            updateVolumeSlider(initialVolume);
+
+            volumeIcon.addEventListener('click', () => {
+                toggleVolumeControl();
+                songList.style.display = 'none';
+            });
+
+            function toggleVolumeControl() {
+                if (volumeControl.style.display === 'block') {
+                    volumeControl.style.display = 'none';
+                } else {
+                    volumeControl.style.display = 'block';
+                }
+            }
+
+            volumePin.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                adjustVolume(e);
+
+                const onMouseMove = (e) => {
+                    if (isDragging) {
+                        adjustVolume(e);
+                    }
+                };
+
+                const onMouseUp = () => {
+                    isDragging = false;
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            function adjustVolume(e) {
+                const rect = volumeSlider.getBoundingClientRect();
+                let newVolume = 1 - (e.clientY - rect.top) / volumeSlider.clientHeight;
+                newVolume = Math.max(0, Math.min(newVolume, 1)); // 0과 1 사이의 값으로 제한
+
+                // 볼륨 업데이트
+                setAllAudioVolume(newVolume);
+                updateVolumeSlider(newVolume);
+            }
+
+            function setAllAudioVolume(volume) {
+                const audios = document.querySelectorAll('.audio');
+                audios.forEach(audio => {
+                    audio.volume = volume;
+                });
+            }
+
+            function updateVolumeSlider(volume) {
+                volumeBar.style.height = (volume * 100) + '%';
+                volumePin.style.bottom = (volume * 100) + '%'; // 아래에 배치하도록 설정
+            }
+
+            document.addEventListener('click', (event) => {
+                const target = event.target;
+
+                // 볼륨 아이콘 또는 볼륨 컨트롤 영역이면 아무 동작 없음
+                if (target.closest('#volumeIcon') || target.closest('#volumeControl')) {
+                    return;
+                }
+
+                // 볼륨 아이콘 또는 볼륨 컨트롤 영역이 아니면 볼륨 컨트롤 숨기기
+                volumeControl.style.display = 'none';
+            });
+
+});
+
+
+    </script>
+
+</body>
+</html>
